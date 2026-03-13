@@ -15,9 +15,9 @@ export interface MarqueeLine {
 
 export const SPEED_MAP: Record<MarqueeSpeed, number> = {
   slow: 20,
-  normal: 12,
-  fast: 7,
-  'very-fast': 4,
+  normal: 8,
+  fast: 4,
+  'very-fast': 2,
 };
 
 export const FONT_SIZE_MAP: Record<FontSize, string> = {

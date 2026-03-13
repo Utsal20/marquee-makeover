@@ -1,17 +1,44 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { MarqueeLine, createDefaultLine } from '@/types/marquee';
 import ControlPanel from '@/components/ControlPanel';
 import MarqueePreview from '@/components/MarqueePreview';
 import ExportPanel from '@/components/ExportPanel';
-import { Code2, Maximize2, Minimize2, Settings2, X } from 'lucide-react';
+import { Code2, Maximize2, Minimize2, Settings2, X, Share2, Check } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { encodeLinesToParams, decodeParamsToLines } from '@/lib/shareUrl';
+import { toast } from 'sonner';
 
 const Index = () => {
-  const [lines, setLines] = useState<MarqueeLine[]>([createDefaultLine()]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [lines, setLines] = useState<MarqueeLine[]>(() => {
+    const encoded = searchParams.get('config');
+    if (encoded) {
+      const decoded = decodeParamsToLines(encoded);
+      if (decoded) return decoded;
+    }
+    return [createDefaultLine()];
+  });
   const [showExport, setShowExport] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isMobile = useIsMobile();
+
+  // Sync lines to URL params
+  useEffect(() => {
+    const hasContent = lines.some(l => l.text.trim());
+    if (hasContent) {
+      setSearchParams({ config: encodeLinesToParams(lines) }, { replace: true });
+    } else {
+      setSearchParams({}, { replace: true });
+    }
+  }, [lines, setSearchParams]);
+
+  const handleShare = useCallback(async () => {
+    const url = window.location.href;
+    await navigator.clipboard.writeText(url);
+    toast.success('Share link copied to clipboard!');
+  }, []);
 
   return (
     <div className="h-screen w-screen flex overflow-hidden bg-background">
@@ -59,6 +86,13 @@ const Index = () => {
             </span>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary/10 border border-primary/30 text-primary text-xs font-mono hover:bg-primary/20 transition-colors"
+            >
+              <Share2 size={13} />
+              <span className="hidden sm:inline">Share</span>
+            </button>
             <button
               onClick={() => setShowExport(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-accent/10 border border-accent/30 text-accent text-xs font-mono hover:bg-accent/20 transition-colors"
