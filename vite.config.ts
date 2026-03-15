@@ -18,4 +18,6 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Base URL configuration for CDN deployment
+  base: mode === 'production' ? '/marquee-makeover/' : '/',
 }));
